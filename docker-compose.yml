@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  backend:
+    container_name: rust_app
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgres://root:secret@postgres:5432/db
+    ports:
+      - "3000:3000"
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+
