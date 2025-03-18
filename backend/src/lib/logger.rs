@@ -17,9 +17,7 @@ pub fn setup_logger() -> Result<(), fern::InitError> {
         .debug(Color::Blue)
         .trace(Color::White);
 
-    let log_path = if cfg!(target_os = "linux") && env::var("DOCKER_ENVIRONMENT").is_ok() {
-        PathBuf::from("/var/log/backend/backend.log")
-    } else {
+    let log_path = {
         let mut path = env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
         path.push("logs");
         std::fs::create_dir_all(&path)?;

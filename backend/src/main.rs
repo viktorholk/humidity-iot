@@ -18,6 +18,7 @@ async fn main() {
     }
 
     let database_pool = lib::database::establish_connection().await;
+
     info!("Database connection established");
 
     let _message_queue_connection = lib::message_queue::create_consume_thread(&database_pool)

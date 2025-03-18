@@ -26,6 +26,7 @@ jobs:
             cd /home
             git clone https://github.com/viktorholk/humidity-iot.git
             cd humidity-iot/
+            git pull
             docker compose down
             docker compose up -d --build
           ' 
