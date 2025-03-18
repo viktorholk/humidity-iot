@@ -45,12 +45,17 @@ services:
     ports:
         - 5672:5672
         - 15672:15672
+        - 1883:1883
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
       interval: 5s
       timeout: 5s
       retries: 5
+    environment:
+         - RABBITMQ_DEFAULT_USER=guest
+         - RABBITMQ_DEFAULT_PASS=quest
     volumes:
+        - ./rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins
         - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
         - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
 
