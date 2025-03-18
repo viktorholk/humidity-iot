@@ -7,6 +7,7 @@ use dotenv::dotenv;
 use log::{error, info};
 
 mod lib;
+
 #[tokio::main]
 async fn main() {
     // Load environment variables
@@ -20,6 +21,8 @@ async fn main() {
     let database_pool = lib::database::establish_connection().await;
 
     info!("Database connection established");
+
+    sqlx::migrate!().run(&database_pool).await;
 
     let _message_queue_connection = lib::message_queue::create_consume_thread(&database_pool)
         .map_err(|e| {
