@@ -1,0 +1,9 @@
+[package]
+name = "test-publisher"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+amiquip = "0.4"
+tokio = { version = "1.0", features = ["full"] }
+chrono = "0.4"

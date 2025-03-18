@@ -4,29 +4,30 @@ use axum::{
     routing::{get, post},
 };
 use dotenv::dotenv;
-use log::{info, error};
+use log::{error, info};
 
-mod message_queue;
-mod logger;
-
+mod lib;
 #[tokio::main]
 async fn main() {
     // Load environment variables
     dotenv().ok();
-    
-    if let Err(e) = logger::setup_logger() {
+
+    if let Err(e) = lib::logger::setup_logger() {
         eprintln!("Error setting up logger: {}", e);
         std::process::exit(1);
     }
 
-    let _connection = message_queue::create_consume_thread()
+    let database_pool = lib::database::establish_connection().await;
+    info!("Database connection established");
+
+    let _message_queue_connection = lib::message_queue::create_consume_thread(&database_pool)
         .map_err(|e| {
             error!("Failed to create RabbitMQ consumer: {}", e);
             e
         })
         .unwrap();
 
-    info!("RabbitMQ connection established and consumer thread started");
+    info!("RabbitMQ connection established");
 
     // build our application with a route
     let app = Router::new().route("/", get(root));
