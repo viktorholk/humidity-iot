@@ -1,9 +1,0 @@
-/Volumes/dev/repos/viktorholk/humidity-iot/test-publisher/target/debug/deps/libsnafu_derive-1db8cff3da61845a.dylib: /Users/viktorholk/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/snafu-derive-0.7.5/src/lib.rs /Users/viktorholk/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/snafu-derive-0.7.5/src/parse.rs /Users/viktorholk/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/snafu-derive-0.7.5/src/shared.rs /Users/viktorholk/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/snafu-derive-0.7.5/src/report.rs /Users/viktorholk/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/snafu-derive-0.7.5/src/report/no_async.rs
-
-/Volumes/dev/repos/viktorholk/humidity-iot/test-publisher/target/debug/deps/snafu_derive-1db8cff3da61845a.d: /Users/viktorholk/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/snafu-derive-0.7.5/src/lib.rs /Users/viktorholk/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/snafu-derive-0.7.5/src/parse.rs /Users/viktorholk/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/snafu-derive-0.7.5/src/shared.rs /Users/viktorholk/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/snafu-derive-0.7.5/src/report.rs /Users/viktorholk/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/snafu-derive-0.7.5/src/report/no_async.rs
-
-/Users/viktorholk/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/snafu-derive-0.7.5/src/lib.rs:
-/Users/viktorholk/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/snafu-derive-0.7.5/src/parse.rs:
-/Users/viktorholk/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/snafu-derive-0.7.5/src/shared.rs:
-/Users/viktorholk/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/snafu-derive-0.7.5/src/report.rs:
-/Users/viktorholk/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/snafu-derive-0.7.5/src/report/no_async.rs:

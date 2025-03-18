@@ -1,0 +1,36 @@
+name: Deploy to Digital Ocean
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install SSH key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: unnecessary
+          if_key_exists: replace
+
+      - name: Add known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to Digital Ocean
+        run: |
+          # Copy the project files to the server
+          scp -r ./* root@${{ secrets.SERVER_IP }}:/root/humidity-iot/
+          
+          # SSH into the server and run docker-compose
+          ssh root@${{ secrets.SERVER_IP }} '
+            cd /root/humidity-iot
+            docker-compose down
+            docker-compose up -d --build
+          ' 
