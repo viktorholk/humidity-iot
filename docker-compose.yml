@@ -14,7 +14,7 @@ services:
     restart: always
     environment:
       DATABASE_URL: postgres://root:secret@postgres:5432/db
-      RABBITMQ_URL: amqp://guest:guest@message_queue:5672
+      RABBITMQ_URL: amqp://admin:secret@message_queue:5672
       DOCKER_ENVIRONMENT: "true"
       RUST_LOG: info
     volumes:
@@ -52,8 +52,8 @@ services:
       timeout: 5s
       retries: 5
     environment:
-         - RABBITMQ_DEFAULT_USER=guest
-         - RABBITMQ_DEFAULT_PASS=quest
+         - RABBITMQ_DEFAULT_USER=admin
+         - RABBITMQ_DEFAULT_PASS=secret
     volumes:
         - ./rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins
         - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
