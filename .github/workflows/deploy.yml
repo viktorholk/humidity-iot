@@ -25,12 +25,10 @@ jobs:
 
       - name: Deploy to Digital Ocean
         run: |
-          # Copy the project files to the server
           scp -r ./* root@${{ secrets.SERVER_IP }}:/root/humidity-iot/
-          
-          # SSH into the server and run docker-compose
+
           ssh root@${{ secrets.SERVER_IP }} '
             cd /root/humidity-iot
-            docker-compose down
-            docker-compose up -d --build
+            docker compose down
+            docker compose up -d --build
           ' 
