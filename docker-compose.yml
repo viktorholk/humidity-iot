@@ -7,12 +7,19 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     depends_on:
-      - postgres
+      message_queue:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
     environment:
       DATABASE_URL: postgres://root:secret@postgres:5432/db
+      RABBITMQ_URL: amqp://guest:guest@message_queue:5672
+      DOCKER_ENVIRONMENT: "true"
+      RUST_LOG: info
+    volumes:
+      - /var/log/backend:/var/log/backend
     ports:
       - "3000:3000"
-
   postgres:
     image: postgres:latest
     container_name: postgres_db
@@ -25,17 +32,27 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root -d db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
   message_queue:
     image: rabbitmq:3-management-alpine
     container_name: 'rabbitmq'
     ports:
         - 5672:5672
         - 15672:15672
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     volumes:
         - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
         - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
 
 volumes:
   postgres_data:
+  rabbitmq_data:
 
