@@ -18,4 +18,4 @@ COPY migrations ./migrations
 
 EXPOSE 3000
 
-CMD ["app/backend"]
+CMD ["/app/backend"]
