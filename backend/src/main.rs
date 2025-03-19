@@ -1,4 +1,5 @@
 use axum::{Json, Router, extract::Query, extract::State, routing::get};
+use tower_http::cors::{Any, CorsLayer};
 use log::{error, info};
 use serde::{Deserialize, Serialize};
 use sqlx::Pool;
@@ -95,9 +96,16 @@ async fn main() {
 
     let state = AppState { db: database_pool };
 
+    // Setup CORS
+    let cors = CorsLayer::new()
+        .allow_origin(Any)
+        .allow_methods(Any)
+        .allow_headers(Any);
+
     let app = Router::new()
         .route("/", get(root))
         .route("/entries", get(get_entries))
+        .layer(cors)
         .with_state(state);
 
     info!("Starting HTTP server on 0.0.0.0:3000");

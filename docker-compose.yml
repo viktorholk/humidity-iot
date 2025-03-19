@@ -57,10 +57,11 @@ services:
          - RABBITMQ_DEFAULT_PASS=secret
     volumes:
         - ./rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins
-        - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
-        - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+        - rabbitmq_data:/var/lib/rabbitmq
+        - rabbitmq_data:/var/log/rabbitmq
 
 volumes:
   postgres_data:
+    driver: local
   rabbitmq_data:
-
+    driver: local
