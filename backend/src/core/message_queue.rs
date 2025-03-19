@@ -67,5 +67,6 @@ pub fn create_consume_thread(db_pool: &Pool<Postgres>) -> Result<Connection> {
         Ok(())
     });
 
+    info!("RabbitMQ connection established and consumer thread started");
     Ok(connection)
 }

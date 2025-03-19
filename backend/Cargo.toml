@@ -14,5 +14,5 @@ openssl = { version = "0.10", features = ["vendored"] }
 dotenv = "0.15"
 log = "0.4"
 fern = { version = "0.6", features = ["colored"] }
-chrono = "0.4"
+chrono = { version = "0.4", features = ["serde"] }
 sqlx = { version = "0.8", features = [ "postgres", "chrono", "runtime-tokio" ] }

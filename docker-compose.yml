@@ -29,6 +29,7 @@ services:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: secret
       POSTGRES_DB: db
+      TZ: Europe/Copenhagen
     ports:
       - "5432:5432"
     volumes:
