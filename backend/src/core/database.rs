@@ -1,6 +1,6 @@
 use std::env;
 
-use log::{error, info};
+use log::error;
 use sqlx::{Pool, Postgres, postgres::PgPoolOptions};
 
 pub async fn establish_connection() -> Pool<Postgres> {

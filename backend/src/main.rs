@@ -1,30 +1,26 @@
-use axum::{
-    Json, Router,
-    http::StatusCode,
-    routing::{get, post},
-};
+use axum::{Router, routing::get};
 use dotenv::dotenv;
 use log::{error, info};
 
-mod lib;
+mod core;
 
 #[tokio::main]
 async fn main() {
     // Load environment variables
     dotenv().ok();
 
-    if let Err(e) = lib::logger::setup_logger() {
+    if let Err(e) = core::logger::setup_logger() {
         eprintln!("Error setting up logger: {}", e);
         std::process::exit(1);
     }
 
-    let database_pool = lib::database::establish_connection().await;
+    let database_pool = core::database::establish_connection().await;
 
     info!("Database connection established");
 
-    sqlx::migrate!().run(&database_pool).await;
+    let _ = sqlx::migrate!().run(&database_pool).await;
 
-    let _message_queue_connection = lib::message_queue::create_consume_thread(&database_pool)
+    let _message_queue_connection = core::message_queue::create_consume_thread(&database_pool)
         .map_err(|e| {
             error!("Failed to create RabbitMQ consumer: {}", e);
             e
