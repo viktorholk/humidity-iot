@@ -1,32 +1,25 @@
-name: Deployment
+name: Deployment to Digital Ocean
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main  
 
 jobs:
-  deploy:
+  deployment:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Install SSH key
-        uses: shimataro/ssh-key-action@v2
+      - name: SSH into Server and Deploy
+        uses: appleboy/ssh-action@v1.0.0
         with:
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          known_hosts: unnecessary
-          if_key_exists: replace
-
-      - name: Add known hosts
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
-
-      - name: Deploy to Digital Ocean
-        run: |
-          ssh root@${{ secrets.SERVER_IP }} '
-            cd /home
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          script: |
+            cd /home/dev
             git clone https://github.com/viktorholk/humidity-iot.git
             cd humidity-iot/
             git pull
             docker compose down
             docker compose up -d --build
-          ' 
