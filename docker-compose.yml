@@ -20,7 +20,7 @@ services:
     volumes:
       - /var/log/backend:/var/log/backend
     ports:
-      - "3000:3000"
+      - 3000:3000
   postgres:
     image: postgres:latest
     container_name: postgres_db
@@ -41,7 +41,8 @@ services:
       retries: 5
   message_queue:
     image: rabbitmq:3-management-alpine
-    container_name: 'rabbitmq'
+    container_name: message_queue_rabbitmq
+    hostname: rabbitmq
     restart: always
     ports:
         - 5672:5672
