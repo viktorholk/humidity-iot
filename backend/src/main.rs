@@ -1,9 +1,9 @@
 use axum::{Json, Router, extract::Query, extract::State, routing::get};
-use tower_http::cors::{Any, CorsLayer};
 use log::{error, info};
 use serde::{Deserialize, Serialize};
 use sqlx::Pool;
 use sqlx::Postgres;
+use tower_http::cors::{Any, CorsLayer};
 
 mod core;
 
@@ -14,23 +14,23 @@ struct AppState {
 
 #[derive(Serialize)]
 struct CountResponse {
-    data_entry_count: i64,
+    total_count: i64,
+    entries_by_identifier: Vec<IdentifierCount>,
+}
+
+#[derive(Serialize)]
+struct IdentifierCount {
+    unique_identifier: String,
+    count: i64,
+    latest_entry: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 #[derive(Serialize)]
 struct DataEntry {
     id: i32,
     unique_identifier: String,
-    #[serde(serialize_with = "format_float")]
     value: f64,
     created_at: chrono::DateTime<chrono::Utc>,
-}
-
-fn format_float<S>(value: &f64, serializer: S) -> Result<S::Ok, S::Error>
-where
-    S: serde::Serializer,
-{
-    serializer.serialize_str(&format!("{:.2}", value))
 }
 
 #[derive(Deserialize)]
@@ -38,16 +38,63 @@ struct LimitQuery {
     limit: Option<i64>,
 }
 
+#[derive(Deserialize)]
+struct AverageQuery {
+    unique_identifier: String,
+    days: Option<i32>,
+}
+
+#[derive(Serialize)]
+struct DailyAverage {
+    date: chrono::NaiveDate,
+    average_value: f64,
+    entry_count: i64,
+}
+trait Round {
+    fn to_2_decimal(self) -> f64;
+}
+
+impl Round for f64 {
+    fn to_2_decimal(self) -> f64 {
+        (self * 100.0).round() / 100.0
+    }
+}
+
 async fn root(State(state): State<AppState>) -> Json<CountResponse> {
-    let count = sqlx::query!("SELECT COUNT(*) as count FROM data_entry")
+    // Get total count
+    let total_count = sqlx::query!("SELECT COUNT(*) as count FROM data_entry")
         .fetch_one(&state.db)
         .await
         .unwrap()
         .count
         .unwrap_or(0);
 
+    // Get count per unique_identifier with latest entry time
+    let entries_by_identifier = sqlx::query!(
+        r#"
+            SELECT 
+                unique_identifier, 
+                COUNT(*) as count,
+                MAX(created_at) as latest_entry
+            FROM data_entry
+            GROUP BY unique_identifier
+            ORDER BY count DESC
+        "#
+    )
+    .fetch_all(&state.db)
+    .await
+    .unwrap()
+    .into_iter()
+    .map(|row| IdentifierCount {
+        unique_identifier: row.unique_identifier,
+        count: row.count.unwrap_or(0),
+        latest_entry: row.latest_entry,
+    })
+    .collect();
+
     Json(CountResponse {
-        data_entry_count: count,
+        total_count,
+        entries_by_identifier,
     })
 }
 
@@ -69,9 +116,53 @@ async fn get_entries(
     )
     .fetch_all(&state.db)
     .await
-    .unwrap();
+    .unwrap()
+    .into_iter()
+    .map(|row| DataEntry {
+        id: row.id,
+        unique_identifier: row.unique_identifier,
+        value: row.value.to_2_decimal(),
+        created_at: row.created_at,
+    })
+    .collect();
 
     Json(entries)
+}
+
+async fn get_averages(
+    State(state): State<AppState>,
+    Query(query): Query<AverageQuery>,
+) -> Json<Vec<DailyAverage>> {
+    let days_back = query.days.unwrap_or(7);
+
+    let averages = sqlx::query!(
+        r#"
+            SELECT 
+                DATE(created_at) as date,
+                AVG(value) as average_value,
+                COUNT(*) as entry_count
+            FROM data_entry
+            WHERE 
+                unique_identifier = $1
+                AND created_at >= CURRENT_DATE - INTERVAL '1 day' * $2
+            GROUP BY DATE(created_at)
+            ORDER BY date DESC
+        "#,
+        query.unique_identifier,
+        days_back as f64
+    )
+    .fetch_all(&state.db)
+    .await
+    .unwrap()
+    .into_iter()
+    .map(|row| DailyAverage {
+        date: row.date.unwrap(),
+        average_value: row.average_value.unwrap_or(0.0).to_2_decimal(),
+        entry_count: row.entry_count.unwrap_or(0),
+    })
+    .collect();
+
+    Json(averages)
 }
 
 #[tokio::main]
@@ -105,6 +196,7 @@ async fn main() {
     let app = Router::new()
         .route("/", get(root))
         .route("/entries", get(get_entries))
+        .route("/averages", get(get_averages))
         .layer(cors)
         .with_state(state);
 
