@@ -8,3 +8,5 @@ amiquip = "0.4"
 tokio = { version = "1.0", features = ["full"] }
 chrono = "0.4"
 rand = "0.8"
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.140"

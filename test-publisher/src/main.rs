@@ -1,7 +1,15 @@
 use amiquip::{Connection, Exchange, Publish, QueueDeclareOptions, Result};
 use rand::Rng;
+use serde::Serialize;
 use std::thread;
 use std::time::Duration;
+
+#[derive(Serialize)]
+struct ExampleMessage {
+    pub mac: String,
+    pub humidity: f32,
+    pub timestamp: i32,
+}
 
 fn main() -> Result<()> {
     // Open connection to RabbitMQ server
@@ -28,12 +36,18 @@ fn main() -> Result<()> {
         // Generate a random float between 0 and 100
         let value: f64 = rng.gen_range(0.0..100.0);
 
+        let payload = ExampleMessage {
+            mac: "XX-22-D0-63-C2-26".to_string(),
+            humidity: value as f32,
+            timestamp: 1742891478,
+        };
+
+        //let data = format!("XX-22-D0-63-C2-26;{}", value.to_string());
+        let data = serde_json::to_string(&payload).unwrap();
+
         // Publish message to the "opla" queue
         // The routing_key (second parameter) must match the queue name when using direct exchange
-        exchange.publish(Publish::new(
-            format!("00-B0-D0-63-C2-26;{}", value.to_string()).as_bytes(),
-            "opla",
-        ))?;
+        exchange.publish(Publish::new(data.as_bytes(), "opla"))?;
         println!("Published to queue '{}': {:.2}", queue.name(), value);
 
         thread::sleep(Duration::from_secs(1));
