@@ -1,0 +1,32 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT \n                unique_identifier, \n                COUNT(*) as count,\n                MAX(created_at) as latest_entry\n            FROM data_entry\n            GROUP BY unique_identifier\n            ORDER BY count DESC\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "unique_identifier",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "count",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 2,
+        "name": "latest_entry",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      null,
+      null
+    ]
+  },
+  "hash": "82df2c936f2b3114a1feff9685406fa168ce879e56f760cf73e97786b674241f"
+}

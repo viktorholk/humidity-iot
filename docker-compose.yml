@@ -7,25 +7,62 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     depends_on:
-      - postgres
+      message_queue:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    restart: always
     environment:
-      DATABASE_URL: postgres://root:secret@postgres:5432/db
+      DATABASE_URL: postgres://root:${POSTGRES_PASSWORD}@postgres:5432/db
+      RABBITMQ_URL: amqp://admin:${RABBITMQ_PASSWORD}@message_queue:5672
+      DOCKER_ENVIRONMENT: "true"
+      RUST_LOG: info
+    volumes:
+      - /var/log/backend:/var/log/backend
     ports:
-      - "3000:3000"
-
+      - 3000:3000
   postgres:
     image: postgres:latest
     container_name: postgres_db
     restart: always
     environment:
       POSTGRES_USER: root
-      POSTGRES_PASSWORD: secret
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: db
+      TZ: Europe/Copenhagen
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root -d db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  message_queue:
+    image: rabbitmq:3-management-alpine
+    container_name: message_queue_rabbitmq
+    hostname: rabbitmq
+    restart: always
+    ports:
+        - 5672:5672
+        - 15672:15672
+        - 1883:1883
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    environment:
+         - RABBITMQ_DEFAULT_USER=admin
+         - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+    volumes:
+        - ./rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins
+        - rabbitmq_data:/var/lib/rabbitmq
+        - rabbitmq_data:/var/log/rabbitmq
 
 volumes:
   postgres_data:
-
+    driver: local
+  rabbitmq_data:
+    driver: local

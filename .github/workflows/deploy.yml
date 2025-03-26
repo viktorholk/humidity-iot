@@ -1,0 +1,27 @@
+name: Deployment to Digital Ocean
+
+on:
+  push:
+    branches:
+      - main  
+
+jobs:
+  deployment:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: SSH into Server and Deploy
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: 22
+          command_timeout: 30m
+          script: |
+            cd /home/dev
+            git clone https://github.com/viktorholk/humidity-iot.git
+            cd humidity-iot/
+            git pull
+            docker compose down
+            docker compose up -d --build

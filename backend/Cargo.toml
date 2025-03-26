@@ -5,8 +5,15 @@ edition = "2024"
 
 [dependencies]
 axum = "0.8.1"
+tower-http = { version = "0.6.2", features = ["cors"] }
 reqwest = { version = "0.12.14", features = ["json"] }
 serde = { version = "1.0", features = ["derive"] }
 tokio = { version = "1.0", features = ["full"] }
 serde_json = "1.0.140"
-
+amiquip = "0.4"
+openssl = { version = "0.10", features = ["vendored"] }
+dotenv = "0.15"
+log = "0.4"
+fern = { version = "0.6", features = ["colored"] }
+chrono = { version = "0.4", features = ["serde"] }
+sqlx = { version = "0.8", features = [ "postgres", "chrono", "runtime-tokio" ] }
