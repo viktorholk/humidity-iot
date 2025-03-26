@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO data_entry (unique_identifier, value) VALUES ($1, $2) RETURNING id, created_at",
+  "query": "INSERT INTO data_entry (unique_identifier, value, created_at) VALUES ($1, $2, $3) RETURNING id, created_at",
   "describe": {
     "columns": [
       {
@@ -17,7 +17,8 @@
     "parameters": {
       "Left": [
         "Varchar",
-        "Float8"
+        "Float8",
+        "Timestamptz"
       ]
     },
     "nullable": [
@@ -25,5 +26,5 @@
       false
     ]
   },
-  "hash": "eac9a7593a725c05aec476ebca7b3f5cf6d9c56e9142db333da93cf4c20f161d"
+  "hash": "7b2034e395449d8219ea9515ee97b07378105a0a688b1b99e88934881b23d178"
 }
