@@ -1,8 +1,17 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  margin: 0;
+  padding: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+}
+
+.App {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch; /* Stretch children to fill the width */
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  box-sizing: border-box;
 }
 
 .logo {
@@ -39,4 +48,150 @@
 
 .read-the-docs {
   color: #888;
+}
+
+.sensor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Responsive columns */
+  gap: 16px; /* Space between boxes */
+  width: 100%; /* Full width */
+  padding: 16px; /* Padding around the grid */
+  box-sizing: border-box; /* Include padding in width calculation */
+}
+
+.sensor-box {
+  padding: 16px;
+  border-radius: 8px;
+  color: white;
+  text-align: center;
+  font-size: 14px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.sensor-box h4 {
+  margin: 0 0 8px;
+}
+
+.sensor-box p {
+  margin: 4px 0;
+}
+
+button {
+  margin: 16px 0;
+  padding: 8px 16px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.graph-container {
+  flex-grow: 1; /* Allow the graph container to grow */
+  width: 100%; /* Full width */
+  max-width: 1000px; /* Set a maximum width for the graph */
+  margin: 0 auto; /* Center the graph horizontally */
+  padding: 16px; /* Add some padding around the graph */
+  box-sizing: border-box; /* Include padding in width calculation */
+}
+
+.graph {
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  width: 300px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-content h3 {
+  margin-bottom: 16px;
+}
+
+.modal-content input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.modal-content button {
+  margin: 0 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+/* Popup container */
+.popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Ensure it appears above other elements */
+}
+
+/* Popup content */
+.popup-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 300px;
+  text-align: center;
+}
+
+/* Input field */
+.popup-content input {
+  width: 90%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+/* Buttons */
+.popup-content button {
+  padding: 10px 20px;
+  margin: 5px;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.popup-content button:first-of-type {
+  background-color: #4caf50; /* Green for Save */
+  color: white;
+}
+
+.popup-content button:last-of-type {
+  background-color: #f44336; /* Red for Cancel */
+  color: white;
+}
+
+/* Button hover effects */
+.popup-content button:hover {
+  opacity: 0.9;
 }
