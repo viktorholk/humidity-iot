@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT unique_identifier, label\n                FROM data_entry_mapping\n                WHERE unique_identifier = ANY($1)\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "unique_identifier",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "label",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "TextArray"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "442bc9d4f214e81657d4eab77a509b91c54653b3e1b7fbe562fdfe52b5abb6c1"
+}
