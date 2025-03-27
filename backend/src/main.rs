@@ -1,6 +1,4 @@
 use log::{error, info};
-use sqlx::Pool;
-use sqlx::Postgres;
 
 mod core;
 mod models;

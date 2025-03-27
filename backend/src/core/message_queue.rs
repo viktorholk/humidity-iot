@@ -1,10 +1,10 @@
 use amiquip::{Connection, ConsumerMessage, ConsumerOptions, QueueDeclareOptions, Result};
+use chrono::DateTime;
 use log::{error, info, warn};
 use serde::Deserialize;
 use sqlx::{Pool, Postgres};
 use std::{env, thread};
 use tokio::runtime::Runtime;
-use chrono::{DateTime, NaiveDateTime, Utc};
 
 #[derive(Deserialize)]
 struct MQQTMessage {
@@ -35,13 +35,13 @@ pub fn create_consume_thread(db_pool: &Pool<Postgres>) -> Result<Connection> {
                     let payload = String::from_utf8_lossy(&delivery.body);
                     info!("{:>4} Received Message [{}]", i, payload);
 
-                    let json: Option<MQQTMessage> = serde_json::from_str(payload.to_string().as_str()).ok();
+                    let json: Option<MQQTMessage> =
+                        serde_json::from_str(payload.to_string().as_str()).ok();
 
                     if let Some(data) = json {
                         // Convert epoch timestamp to DateTime<Utc>
-                        let timestamp_datetime = NaiveDateTime::from_timestamp_opt(data.timestamp as i64, 0)
-                            .map(|ndt| DateTime::<Utc>::from_utc(ndt, Utc));
-                        
+                        let timestamp_datetime = DateTime::from_timestamp(data.timestamp, 0);
+
                         if let Some(datetime) = timestamp_datetime {
                             match runtime.block_on(
                                     sqlx::query!(
