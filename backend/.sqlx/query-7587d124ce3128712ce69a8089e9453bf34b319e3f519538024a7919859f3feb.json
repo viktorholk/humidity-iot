@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n        SELECT id, unique_identifier, label, created_at\n        FROM data_entry_mapping\n        WHERE label = $1\n        ",
+  "query": "\n        SELECT id, unique_identifier, label, user_id, created_at\n        FROM data_entry_mapping\n        WHERE user_id = $1\n        ORDER BY id\n        ",
   "describe": {
     "columns": [
       {
@@ -20,21 +20,27 @@
       },
       {
         "ordinal": 3,
+        "name": "user_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
         "name": "created_at",
         "type_info": "Timestamptz"
       }
     ],
     "parameters": {
       "Left": [
-        "Text"
+        "Int4"
       ]
     },
     "nullable": [
       false,
       false,
       false,
+      false,
       true
     ]
   },
-  "hash": "bcd4fdce88de87f7de570f3887a2821cabc392672ebcc0e1e6b282fb3c8ddd91"
+  "hash": "7587d124ce3128712ce69a8089e9453bf34b319e3f519538024a7919859f3feb"
 }

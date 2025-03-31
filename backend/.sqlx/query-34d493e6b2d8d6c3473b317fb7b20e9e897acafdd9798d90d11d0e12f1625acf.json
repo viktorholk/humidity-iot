@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n                SELECT unique_identifier, label\n                FROM data_entry_mapping\n                WHERE unique_identifier = ANY($1)\n            ",
+  "query": "\n                SELECT unique_identifier, label\n                FROM data_entry_mapping\n                WHERE unique_identifier = ANY($1) AND user_id = $2\n            ",
   "describe": {
     "columns": [
       {
@@ -16,7 +16,8 @@
     ],
     "parameters": {
       "Left": [
-        "TextArray"
+        "TextArray",
+        "Int4"
       ]
     },
     "nullable": [
@@ -24,5 +25,5 @@
       false
     ]
   },
-  "hash": "442bc9d4f214e81657d4eab77a509b91c54653b3e1b7fbe562fdfe52b5abb6c1"
+  "hash": "34d493e6b2d8d6c3473b317fb7b20e9e897acafdd9798d90d11d0e12f1625acf"
 }

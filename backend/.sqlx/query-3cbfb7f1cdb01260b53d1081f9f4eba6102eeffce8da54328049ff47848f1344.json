@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            UPDATE data_entry_mapping\n            SET \n                unique_identifier = $1,\n                label = $2\n            WHERE id = $3\n            RETURNING id, unique_identifier, label, created_at\n            ",
+  "query": "\n            UPDATE data_entry_mapping\n            SET \n                unique_identifier = $1,\n                label = $2\n            WHERE id = $3 AND user_id = $4\n            RETURNING id, unique_identifier, label, user_id, created_at\n            ",
   "describe": {
     "columns": [
       {
@@ -20,6 +20,11 @@
       },
       {
         "ordinal": 3,
+        "name": "user_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
         "name": "created_at",
         "type_info": "Timestamptz"
       }
@@ -28,6 +33,7 @@
       "Left": [
         "Varchar",
         "Varchar",
+        "Int4",
         "Int4"
       ]
     },
@@ -35,8 +41,9 @@
       false,
       false,
       false,
+      false,
       true
     ]
   },
-  "hash": "bf12e312310bff8815ada29b59cbbcbd92b697e406a9e9e95f4297231f5e13c1"
+  "hash": "3cbfb7f1cdb01260b53d1081f9f4eba6102eeffce8da54328049ff47848f1344"
 }

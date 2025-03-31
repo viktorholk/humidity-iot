@@ -13,6 +13,7 @@ pub struct IdentifierCount {
     pub unique_identifier: String,
     pub count: i64,
     pub latest_entry: Option<chrono::DateTime<chrono::Utc>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub label: Option<String>,
 }
 
@@ -60,48 +61,12 @@ impl Round for f64 {
     }
 }
 
-pub async fn get_total_count_with_identifiers(db: &Pool<Postgres>) -> CountResponse {
-    // Get total count
-    let total_count = sqlx::query!("SELECT COUNT(*) as count FROM data_entry")
-        .fetch_one(db)
-        .await
-        .unwrap()
-        .count
-        .unwrap_or(0);
-
-    // Get count per unique_identifier with latest entry time and mapping label
-    let entries_by_identifier = sqlx::query!(
-        r#"
-            SELECT 
-                de.unique_identifier, 
-                COUNT(*) as count,
-                MAX(de.created_at) as latest_entry,
-                dem.label as "label?"
-            FROM data_entry de
-            LEFT JOIN data_entry_mapping dem ON de.unique_identifier = dem.unique_identifier
-            GROUP BY de.unique_identifier, dem.label
-            ORDER BY count DESC
-        "#
-    )
-    .fetch_all(db)
-    .await
-    .unwrap()
-    .into_iter()
-    .map(|row| IdentifierCount {
-        unique_identifier: row.unique_identifier,
-        count: row.count.unwrap_or(0),
-        latest_entry: row.latest_entry,
-        label: row.label,
-    })
-    .collect();
-
-    CountResponse {
-        total_count,
-        entries_by_identifier,
-    }
-}
-
-pub async fn get_recent_entries(db: &Pool<Postgres>, limit: i64) -> Vec<DataEntry> {
+// Get recent entries for a user
+pub async fn get_recent_entries_for_user(
+    db: &Pool<Postgres>,
+    user_id: i32,
+    limit: i64,
+) -> Vec<DataEntry> {
     sqlx::query!(
         r#"
             SELECT 
@@ -111,10 +76,12 @@ pub async fn get_recent_entries(db: &Pool<Postgres>, limit: i64) -> Vec<DataEntr
                 de.created_at,
                 dem.label as "label?"
             FROM data_entry de
-            LEFT JOIN data_entry_mapping dem ON de.unique_identifier = dem.unique_identifier
+            JOIN data_entry_mapping dem ON de.unique_identifier = dem.unique_identifier
+            WHERE dem.user_id = $1
             ORDER BY de.created_at DESC
-            LIMIT $1
+            LIMIT $2
         "#,
+        user_id,
         limit
     )
     .fetch_all(db)
@@ -131,36 +98,45 @@ pub async fn get_recent_entries(db: &Pool<Postgres>, limit: i64) -> Vec<DataEntr
     .collect()
 }
 
-pub async fn get_daily_averages(
-    db: &Pool<Postgres>, 
-    unique_identifiers: &str, 
-    days_back: i32
+// Get daily averages for a user's identifiers
+pub async fn get_daily_averages_for_user(
+    db: &Pool<Postgres>,
+    user_id: i32,
+    unique_identifiers: &str,
+    days_back: i32,
 ) -> AverageResponse {
-    let identifiers: Vec<String> = unique_identifiers.split(',').map(|s| s.trim().to_string()).collect();
-    
+    let identifiers: Vec<String> = unique_identifiers
+        .split(',')
+        .map(|s| s.trim().to_string())
+        .collect();
+
     let mut response_map = std::collections::HashMap::new();
     let mut labels_map = std::collections::HashMap::new();
-    
-    // Get labels for the identifiers
+
+    // Get labels for the identifiers, filtering by user_id
     if !identifiers.is_empty() {
         let labels = sqlx::query!(
             r#"
                 SELECT unique_identifier, label
                 FROM data_entry_mapping
-                WHERE unique_identifier = ANY($1)
+                WHERE unique_identifier = ANY($1) AND user_id = $2
             "#,
-            &identifiers
+            &identifiers,
+            user_id
         )
         .fetch_all(db)
         .await
         .unwrap();
-        
+
         for row in labels {
             labels_map.insert(row.unique_identifier, row.label);
         }
     }
-    
-    for identifier in identifiers {
+
+    // Only use identifiers that belong to the user
+    let user_identifiers: Vec<String> = labels_map.keys().cloned().collect();
+
+    for identifier in user_identifiers {
         let averages = sqlx::query!(
             r#"
                 SELECT 
@@ -187,7 +163,7 @@ pub async fn get_daily_averages(
             entry_count: row.entry_count.unwrap_or(0),
         })
         .collect();
-        
+
         response_map.insert(identifier, averages);
     }
 
@@ -195,4 +171,44 @@ pub async fn get_daily_averages(
         identifiers: response_map,
         labels: labels_map,
     }
-} 
+}
+
+// Get total count and counts by identifier without requiring authentication
+pub async fn get_public_count_data(db: &Pool<Postgres>) -> CountResponse {
+    // Get total count across all data entries
+    let total_count = sqlx::query!("SELECT COUNT(*) as count FROM data_entry")
+        .fetch_one(db)
+        .await
+        .unwrap()
+        .count
+        .unwrap_or(0);
+
+    // Get count per unique_identifier with latest entry time and mapping label if available
+    let entries_by_identifier = sqlx::query!(
+        r#"
+            SELECT 
+                de.unique_identifier, 
+                COUNT(*) as count,
+                MAX(de.created_at) as latest_entry
+            FROM data_entry de
+            GROUP BY de.unique_identifier
+            ORDER BY count DESC
+        "#
+    )
+    .fetch_all(db)
+    .await
+    .unwrap()
+    .into_iter()
+    .map(|row| IdentifierCount {
+        unique_identifier: row.unique_identifier,
+        count: row.count.unwrap_or(0),
+        latest_entry: row.latest_entry,
+        label: None,
+    })
+    .collect();
+
+    CountResponse {
+        total_count,
+        entries_by_identifier,
+    }
+}

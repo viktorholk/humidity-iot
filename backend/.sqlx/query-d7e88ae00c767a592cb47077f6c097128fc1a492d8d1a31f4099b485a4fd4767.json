@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT \n                de.id, \n                de.unique_identifier, \n                de.value, \n                de.created_at,\n                dem.label as \"label?\"\n            FROM data_entry de\n            LEFT JOIN data_entry_mapping dem ON de.unique_identifier = dem.unique_identifier\n            ORDER BY de.created_at DESC\n            LIMIT $1\n        ",
+  "query": "\n            SELECT \n                de.id, \n                de.unique_identifier, \n                de.value, \n                de.created_at,\n                dem.label as \"label?\"\n            FROM data_entry de\n            JOIN data_entry_mapping dem ON de.unique_identifier = dem.unique_identifier\n            WHERE dem.user_id = $1\n            ORDER BY de.created_at DESC\n            LIMIT $2\n        ",
   "describe": {
     "columns": [
       {
@@ -31,6 +31,7 @@
     ],
     "parameters": {
       "Left": [
+        "Int4",
         "Int8"
       ]
     },
@@ -42,5 +43,5 @@
       false
     ]
   },
-  "hash": "6cf9d1e65c5205546a60fde119376d8103026d3d7ccc153926100647ff1f807b"
+  "hash": "d7e88ae00c767a592cb47077f6c097128fc1a492d8d1a31f4099b485a4fd4767"
 }

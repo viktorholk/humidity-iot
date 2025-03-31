@@ -17,6 +17,7 @@ services:
       RABBITMQ_URL: amqp://admin:${RABBITMQ_PASSWORD}@message_queue:5672
       DOCKER_ENVIRONMENT: "true"
       RUST_LOG: info
+      JWT_SECRET: ${JWT_SECRET}
     volumes:
       - /var/log/backend:/var/log/backend
     ports:

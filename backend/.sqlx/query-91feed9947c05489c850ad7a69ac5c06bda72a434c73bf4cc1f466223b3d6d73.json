@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n        SELECT id, unique_identifier, label, created_at\n        FROM data_entry_mapping\n        WHERE id = $1\n        ",
+  "query": "\n        INSERT INTO app_user (username, password)\n        VALUES ($1, $2)\n        RETURNING id, username, password, created_at\n        ",
   "describe": {
     "columns": [
       {
@@ -10,13 +10,13 @@
       },
       {
         "ordinal": 1,
-        "name": "unique_identifier",
+        "name": "username",
         "type_info": "Varchar"
       },
       {
         "ordinal": 2,
-        "name": "label",
-        "type_info": "Varchar"
+        "name": "password",
+        "type_info": "Text"
       },
       {
         "ordinal": 3,
@@ -26,7 +26,8 @@
     ],
     "parameters": {
       "Left": [
-        "Int4"
+        "Varchar",
+        "Text"
       ]
     },
     "nullable": [
@@ -36,5 +37,5 @@
       true
     ]
   },
-  "hash": "4a910bfbfa3c6a9e602c61761d2568b0a4cf271c8db8db47befc8fba9beb76f2"
+  "hash": "91feed9947c05489c850ad7a69ac5c06bda72a434c73bf4cc1f466223b3d6d73"
 }
