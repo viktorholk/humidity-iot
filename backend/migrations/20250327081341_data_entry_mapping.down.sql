@@ -1,0 +1,2 @@
+-- Add down migration script here
+DROP TABLE IF EXISTS data_entry_mapping;
