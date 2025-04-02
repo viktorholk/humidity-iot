@@ -36,6 +36,9 @@ function App() {
   const [outdoorHumidity, setOutdoorHumidity] = useState<number | null>(null);
   const [isMapPopupVisible, setIsMapPopupVisible] = useState(false);
   const [availableSensors, setAvailableSensors] = useState<Sensor[]>([]);
+  const [isMapLabelPopupVisible, setIsMapLabelPopupVisible] = useState(false);
+  const [mappingSensorId, setMappingSensorId] = useState<string | null>(null);
+  const [mappingSensorLabel, setMappingSensorLabel] = useState<string>("");
 
   useEffect(() => {
     const token = localStorage.getItem("jwtToken");
@@ -198,28 +201,31 @@ function App() {
     }
   };
 
-  const handleMapSensor = async (sensorId: string) => {
+  const handleMapSensor = async () => {
+    if (!mappingSensorId) return;
     try {
-      const sensorLabel = prompt("Enter a label for the sensor:") || "Unnamed Sensor";
-      const response = await mapSensor(sensorId, sensorLabel); // Get the response from the API
+      const response = await mapSensor(mappingSensorId, mappingSensorLabel);
 
-      const mappedSensor = availableSensors.find((s) => s.unique_identifier === sensorId);
+      const mappedSensor = availableSensors.find((s) => s.unique_identifier === mappingSensorId);
       if (mappedSensor) {
         setSensors((prev) => [
           ...prev,
           {
             ...mappedSensor,
-            id: response.id, // Set the ID from the API response
-            label: sensorLabel, // Save the label to the sensor
+            id: response.id,
+            label: mappingSensorLabel,
           },
         ]);
       }
 
       setAvailableSensors((prev) =>
-        prev.filter((s) => s.unique_identifier !== sensorId)
+        prev.filter((s) => s.unique_identifier !== mappingSensorId)
       );
+      setIsMapLabelPopupVisible(false);
+      setMappingSensorId(null);
+      setMappingSensorLabel("");
     } catch (error) {
-      console.error(`Error mapping sensor ${sensorId}:`, error);
+      console.error(`Error mapping sensor ${mappingSensorId}:`, error);
     }
   };
 
@@ -279,6 +285,10 @@ function App() {
   const isLatestReadingToday = (latestEntry: string) => {
     const today = new Date().toISOString().split("T")[0];
     return latestEntry.startsWith(today);
+  };
+
+  const handleMapLabelSubmit = () => {
+    handleMapSensor();
   };
 
   return (
@@ -371,11 +381,41 @@ function App() {
               {availableSensors.map((sensor) => (
                 <li key={sensor.unique_identifier}>
                   {sensor.unique_identifier}
-                  <button onClick={() => handleMapSensor(sensor.unique_identifier)}>Map</button>
+                  <button
+                    onClick={() => {
+                      setMappingSensorId(sensor.unique_identifier);
+                      setIsMapLabelPopupVisible(true);
+                    }}
+                  >
+                    Map
+                  </button>
                 </li>
               ))}
             </ul>
             <button onClick={() => setIsMapPopupVisible(false)}>Close</button>
+          </div>
+        </div>
+      )}
+
+      {isMapLabelPopupVisible && (
+        <div className="popup">
+          <div className="popup-content">
+            <h3>Enter Sensor Label</h3>
+            <input
+              type="text"
+              value={mappingSensorLabel}
+              onChange={(e) => setMappingSensorLabel(e.target.value)}
+            />
+            <button onClick={handleMapLabelSubmit}>Save</button>
+            <button
+              onClick={() => {
+                setIsMapLabelPopupVisible(false);
+                setMappingSensorId(null);
+                setMappingSensorLabel("");
+              }}
+            >
+              Cancel
+            </button>
           </div>
         </div>
       )}
