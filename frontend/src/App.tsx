@@ -20,20 +20,15 @@ import {
   updateMapSensor,
   getOutdoorHumidity,
   getmapedSensors,
+  deleteMappedSensor,
 } from "./Service";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
-
-  // Move all hooks to the top level
   const [sensors, setSensors] = useState<Sensor[]>([]);
-  const [selectedSensors, setSelectedSensors] = useState<
-    Record<string, boolean>
-  >({});
-  const [sensorReadings, setSensorReadings] = useState<
-    Record<string, Reading[]>
-  >({});
+  const [selectedSensors, setSelectedSensors] = useState<Record<string, boolean>>({});
+  const [sensorReadings, setSensorReadings] = useState<Record<string, Reading[]>>({});
   const [isGridCollapsed, setIsGridCollapsed] = useState(false);
   const [isRenamePopupVisible, setIsRenamePopupVisible] = useState(false);
   const [renamingSensorId, setRenamingSensorId] = useState<string | null>(null);
@@ -44,58 +39,90 @@ function App() {
 
   useEffect(() => {
     const token = localStorage.getItem("jwtToken");
-    if (token) {
-      setIsAuthenticated(true); // Automatically log in if token exists
-    }
+    if (token) setIsAuthenticated(true);
   }, []);
 
   useEffect(() => {
-    async function fetchMappedSensors() {
+    if (!isAuthenticated) return; // Prevent API call if not authenticated
+    const fetchMappedSensors = async () => {
       try {
-        const allSensorsResponse = await getSensors(); // Fetch all sensors with full details
-        const mappedResponse = await getmapedSensors(); // Fetch already mapped sensors
-
-        const mappedIdentifiers = new Set(
-          mappedResponse.map((sensor: any) => sensor.unique_identifier)
-        ); // Create a set of mapped sensor identifiers
-
-        const mappedSensors = allSensorsResponse.entries_by_identifier.filter(
-          (sensor: any) => mappedIdentifiers.has(sensor.unique_identifier)
-        ); // Filter sensors to only include mapped ones
-
-        setSensors(mappedSensors); // Set the sensors state
-
-        const initialSelection = mappedSensors.reduce(
-          (acc: Record<string, boolean>, sensor: Sensor) => {
+        const allSensors = await getSensors();
+        const mappedSensors = await getmapedSensors();
+        const mappedIdentifiers = new Set(mappedSensors.map((s: any) => s.unique_identifier));
+        const filteredSensors = allSensors.entries_by_identifier.filter((s: any) =>
+          mappedIdentifiers.has(s.unique_identifier)
+        );
+        setSensors(
+          filteredSensors.map((sensor: any) => {
+            const mappedSensor = mappedSensors.find(
+              (m: any) => m.unique_identifier === sensor.unique_identifier
+            );
+            return {
+              id: mappedSensor?.id, // Include the id from the mapped sensor
+              unique_identifier: sensor.unique_identifier,
+              label: mappedSensor?.label || `Sensor ${sensor.unique_identifier}`, // Use the mapped label or a default name
+              count: sensor.count,
+              latest_entry: sensor.latest_entry,
+            };
+          })
+        );
+        setSelectedSensors(
+          filteredSensors.reduce((acc: Record<string, boolean>, sensor: Sensor) => {
             acc[sensor.unique_identifier] = false;
             return acc;
-          },
-          {}
+          }, {})
         );
-        setSelectedSensors(initialSelection); // Initialize the selection state
       } catch (error) {
         console.error("Error fetching mapped sensors:", error);
       }
-    }
-
-    fetchMappedSensors(); // Call the function on component mount
-  }, []);
+    };
+    fetchMappedSensors();
+  }, [isAuthenticated]);
 
   useEffect(() => {
-    async function fetchOutdoorHumidity() {
+    if (!isAuthenticated) return; // Prevent API call if not authenticated
+    const fetchOutdoorHumidity = async () => {
       try {
-        const response = await getOutdoorHumidity(52.52, 13.41); // Example coordinates
+        const response = await getOutdoorHumidity(52.52, 13.41);
         setOutdoorHumidity(response.meanHumidity);
       } catch (error) {
         console.error("Error fetching outdoor humidity:", error);
       }
-    }
-
+    };
     fetchOutdoorHumidity();
-  }, []);
+  }, [isAuthenticated]);
 
-  const handleLoginSuccess = (token: string) => {
-    setIsAuthenticated(true);
+  const handleLoginSuccess = (token: string) => setIsAuthenticated(true);
+
+  const handleRenameClick = (id: string) => {
+    setRenamingSensorId(id);
+    const sensor = sensors.find((sensor) => sensor.unique_identifier === id);
+    if (sensor) {
+      setNewName(sensor.label); // Pre-fill the input with the current label
+    }
+    setIsRenamePopupVisible(true);
+  };
+
+  const handleMapButtonClick = async () => {
+    if (!isAuthenticated) return; // Prevent API call if not authenticated
+    try {
+      const allSensorsResponse = await getSensors();
+      const mappedResponse = await getmapedSensors();
+
+      const mappedIdentifiers = new Set(
+        mappedResponse.map((sensor: any) => sensor.unique_identifier)
+      );
+
+      const unmappedSensors = allSensorsResponse.entries_by_identifier.filter(
+        (sensor: any) => !mappedIdentifiers.has(sensor.unique_identifier)
+      );
+
+      setAvailableSensors(unmappedSensors);
+      setIsMapPopupVisible(true);
+    } catch (error) {
+      console.error("Error fetching available sensors:", error);
+      setAvailableSensors([]);
+    }
   };
 
   if (!isAuthenticated) {
@@ -109,13 +136,14 @@ function App() {
             onSwitchToRegister={() => setIsRegistering(true)}
           />
         )}
-        <button onClick={() => setIsRegistering(false)}>Back to Login</button>
       </div>
     );
   }
 
   interface Sensor {
+    id: number;
     unique_identifier: string;
+    label: string; // Added label property
     count: number;
     latest_entry: string;
   }
@@ -126,29 +154,25 @@ function App() {
     entry_count: number;
   }
 
-  const handleRenameClick = (id: string) => {
-    setRenamingSensorId(id); // Set the sensor being renamed
-    const sensor = sensors.find((sensor) => sensor.unique_identifier === id);
-    if (sensor) {
-      setNewName(sensor.unique_identifier); // Pre-fill the input with the current name
-    }
-    setIsRenamePopupVisible(true); // Show the popup
-  };
-
   const handleRenameSubmit = async () => {
     if (renamingSensorId) {
       try {
-        await updateMapSensor(renamingSensorId, newName); // Call the rename service
+        const sensor = sensors.find((s) => s.unique_identifier === renamingSensorId);
+        if (!sensor || !sensor.id) {
+          console.error("Sensor ID not found for renaming");
+          return;
+        }
+        await updateMapSensor(sensor.id, renamingSensorId, newName);
         setSensors((prev) =>
-          prev.map((sensor) =>
-            sensor.unique_identifier === renamingSensorId
-              ? { ...sensor, unique_identifier: newName }
-              : sensor
+          prev.map((s) =>
+            s.unique_identifier === renamingSensorId
+              ? { ...s, label: newName } // Update the label
+              : s
           )
         );
-        setIsRenamePopupVisible(false); // Hide the popup
-        setRenamingSensorId(null); // Clear the renaming state
-        setNewName(""); // Clear the input field
+        setIsRenamePopupVisible(false);
+        setRenamingSensorId(null);
+        setNewName("");
       } catch (error) {
         console.error(`Error renaming sensor ${renamingSensorId}:`, error);
       }
@@ -156,18 +180,12 @@ function App() {
   };
 
   const handleCheckboxChange = async (id: string) => {
-    setSelectedSensors((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-
+    if (!isAuthenticated) return; // Prevent API call if not authenticated
+    setSelectedSensors((prev) => ({ ...prev, [id]: !prev[id] }));
     if (!selectedSensors[id]) {
       try {
         const response = await getSensorReadingsByMacAddress(id);
-        setSensorReadings((prev) => ({
-          ...prev,
-          [id]: response[id] || [],
-        }));
+        setSensorReadings((prev) => ({ ...prev, [id]: response[id] || [] }));
       } catch (error) {
         console.error(`Error fetching readings for sensor ${id}:`, error);
       }
@@ -180,36 +198,23 @@ function App() {
     }
   };
 
-  const handleMapButtonClick = async () => {
-    try {
-      const allSensorsResponse = await getSensors(); // Fetch all available sensors
-      const mappedResponse = await getmapedSensors(); // Fetch already mapped sensors
-
-      const mappedIdentifiers = new Set(
-        mappedResponse.map((sensor: any) => sensor.unique_identifier)
-      ); // Create a set of mapped sensor identifiers
-
-      const unmappedSensors = allSensorsResponse.entries_by_identifier.filter(
-        (sensor: any) => !mappedIdentifiers.has(sensor.unique_identifier)
-      ); // Filter out already mapped sensors
-
-      setAvailableSensors(unmappedSensors); // Set the available sensors
-      setIsMapPopupVisible(true); // Show the popup
-    } catch (error) {
-      console.error("Error fetching available sensors:", error);
-      setAvailableSensors([]); // Fallback to an empty array
-    }
-  };
-
   const handleMapSensor = async (sensorId: string) => {
     try {
-      const sensorLabel =
-        prompt("Enter a label for the sensor:") || "Unnamed Sensor";
-      await mapSensor(sensorId, sensorLabel); // Call the map sensor service with label
-      setSensors((prev) => [
-        ...prev,
-        availableSensors.find((s) => s.unique_identifier === sensorId)!,
-      ]);
+      const sensorLabel = prompt("Enter a label for the sensor:") || "Unnamed Sensor";
+      const response = await mapSensor(sensorId, sensorLabel); // Get the response from the API
+
+      const mappedSensor = availableSensors.find((s) => s.unique_identifier === sensorId);
+      if (mappedSensor) {
+        setSensors((prev) => [
+          ...prev,
+          {
+            ...mappedSensor,
+            id: response.id, // Set the ID from the API response
+            label: sensorLabel, // Save the label to the sensor
+          },
+        ]);
+      }
+
       setAvailableSensors((prev) =>
         prev.filter((s) => s.unique_identifier !== sensorId)
       );
@@ -218,64 +223,58 @@ function App() {
     }
   };
 
-  ChartJS.register(
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend
-  );
+  const handleRemoveSensor = async (sensorId: string) => {
+    try {
+      const sensor = sensors.find((s) => s.unique_identifier === sensorId);
+      if (!sensor || !sensor.id) {
+        console.error("Sensor ID not found for removal");
+        return;
+      }
+      await deleteMappedSensor(sensor.id); // Call the service to delete the sensor
+      setSensors((prev) => prev.filter((s) => s.unique_identifier !== sensorId)); // Remove from state
+    } catch (error) {
+      console.error(`Error removing sensor ${sensorId}:`, error);
+    }
+  };
+
+  ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
   const generateCombinedChartData = () => {
     const selectedReadings = Object.entries(sensorReadings)
       .filter(([id]) => selectedSensors[id])
-      .map(([id, readings]) => readings);
+      .map(([_, readings]) => readings);
 
     const allDates = Array.from(
-      new Set(
-        selectedReadings.flatMap((readings) =>
-          readings.map((reading) => reading.date)
-        )
-      )
+      new Set(selectedReadings.flatMap((readings) => readings.map((r) => r.date)))
     ).sort();
 
     const datasets = Object.entries(sensorReadings)
       .filter(([id]) => selectedSensors[id])
-      .map(([id, readings]) => ({
-        label: id,
-        data: allDates.map((date) => {
-          const reading = readings.find((r) => r.date === date);
-          return reading ? reading.average_value : null;
-        }),
-        borderColor: `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(
-          Math.random() * 255
-        )}, ${Math.floor(Math.random() * 255)}, 1)`,
-        backgroundColor: "rgba(0, 0, 0, 0)",
-        tension: 0.4,
-      }));
+      .map(([id, readings]) => {
+        const sensor = sensors.find((s) => s.unique_identifier === id);
+        return {
+          label: sensor?.label || id, // Use the label or fallback to unique_identifier
+          data: allDates.map((date) => readings.find((r) => r.date === date)?.average_value || null),
+          borderColor: `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 1)`,
+          backgroundColor: "rgba(0, 0, 0, 0)",
+          tension: 0.4,
+        };
+      });
 
-    // Add outdoor humidity as a separate dataset
     if (outdoorHumidity && Array.isArray(outdoorHumidity)) {
       datasets.push({
         label: "Outdoor Humidity",
-        data: allDates.map((_, index) => outdoorHumidity[index] ?? null), // Map outdoor humidity to corresponding dates
-        borderColor: "rgba(0, 123, 255, 1)", // Blue color for outdoor humidity
+        data: allDates.map((_, index) => outdoorHumidity[index] ?? null),
+        borderColor: "rgba(0, 123, 255, 1)",
         backgroundColor: "rgba(0, 0, 0, 0)",
         tension: 0.4,
       });
     }
 
-    return {
-      labels: allDates,
-      datasets,
-    };
+    return { labels: allDates, datasets };
   };
 
-  const toggleGridCollapse = () => {
-    setIsGridCollapsed((prev) => !prev);
-  };
+  const toggleGridCollapse = () => setIsGridCollapsed((prev) => !prev);
 
   const isLatestReadingToday = (latestEntry: string) => {
     const today = new Date().toISOString().split("T")[0];
@@ -289,7 +288,9 @@ function App() {
         <button onClick={toggleGridCollapse}>
           {isGridCollapsed ? "Expand Grid" : "Collapse Grid"}
         </button>
-        <button onClick={handleMapButtonClick}>Add Sensor</button>
+        {!isGridCollapsed && (
+          <button onClick={handleMapButtonClick}>Add Sensor</button>
+        )}
         {!isGridCollapsed && (
           <div className="sensor-grid">
             {sensors.map((sensor) => (
@@ -297,20 +298,17 @@ function App() {
                 key={sensor.unique_identifier}
                 className="sensor-box"
                 style={{
-                  backgroundColor: isLatestReadingToday(sensor.latest_entry)
-                    ? "green"
-                    : "red",
+                  backgroundColor: isLatestReadingToday(sensor.latest_entry) ? "green" : "red",
                 }}
               >
                 <div>
                   <h4>
-                    {sensor.unique_identifier}{" "}
-                    <button
-                      onClick={() =>
-                        handleRenameClick(sensor.unique_identifier)
-                      }
-                    >
+                    {sensor.label}{" "} {/* Display the sensor name (label) */}
+                    <button onClick={() => handleRenameClick(sensor.unique_identifier)}>
                       Rename
+                    </button>
+                    <button onClick={() => handleRemoveSensor(sensor.unique_identifier)}>
+                      Remove
                     </button>
                   </h4>
                 </div>
@@ -321,9 +319,7 @@ function App() {
                     type="checkbox"
                     name={sensor.unique_identifier}
                     checked={selectedSensors[sensor.unique_identifier] ?? false}
-                    onChange={() =>
-                      handleCheckboxChange(sensor.unique_identifier)
-                    }
+                    onChange={() => handleCheckboxChange(sensor.unique_identifier)}
                   />
                   Select
                 </label>
@@ -341,13 +337,8 @@ function App() {
                 responsive: true,
                 spanGaps: true,
                 plugins: {
-                  legend: {
-                    position: "top",
-                  },
-                  title: {
-                    display: true,
-                    text: "Combined Sensor Readings",
-                  },
+                  legend: { position: "top" },
+                  title: { display: true, text: "Combined Sensor Readings" },
                 },
               }}
             />
@@ -367,9 +358,7 @@ function App() {
               onChange={(e) => setNewName(e.target.value)}
             />
             <button onClick={handleRenameSubmit}>Save</button>
-            <button onClick={() => setIsRenamePopupVisible(false)}>
-              Cancel
-            </button>
+            <button onClick={() => setIsRenamePopupVisible(false)}>Cancel</button>
           </div>
         </div>
       )}
@@ -382,11 +371,7 @@ function App() {
               {availableSensors.map((sensor) => (
                 <li key={sensor.unique_identifier}>
                   {sensor.unique_identifier}
-                  <button
-                    onClick={() => handleMapSensor(sensor.unique_identifier)}
-                  >
-                    Map
-                  </button>
+                  <button onClick={() => handleMapSensor(sensor.unique_identifier)}>Map</button>
                 </li>
               ))}
             </ul>

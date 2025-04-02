@@ -5,6 +5,8 @@ const getAuthHeaders = () => {
   return token ? { Authorization: `Bearer ${token}` } : { Authorization: "" };
 };
 
+const isAuthenticated = () => !!localStorage.getItem("jwtToken");
+
 export const registerUser = async (username: string, password: string) => {
   try {
     const response = await fetch(`${API_BASE_URL}/users`, {
@@ -43,6 +45,7 @@ export const login = async (username: string, password: string) => {
 };
 
 export const getSensors = async () => {
+  if (!isAuthenticated()) throw new Error("User not authenticated");
   try {
     const response = await fetch(`${API_BASE_URL}`); // Fetch all sensors
     if (!response.ok) {
@@ -58,6 +61,7 @@ export const getSensors = async () => {
 };
 
 export const mapSensor = async (unique_identifier: string, label: string) => {
+  if (!isAuthenticated()) throw new Error("User not authenticated");
   try {
     const response = await fetch(`${API_BASE_URL}/mappings`, {
       method: "POST",
@@ -68,12 +72,11 @@ export const mapSensor = async (unique_identifier: string, label: string) => {
       }),
     });
     if (!response.ok) {
-      console.error(unique_identifier, label, getAuthHeaders());
-      throw new Error(`HTTP error! status: ${(response.status, response)}`);
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
     console.log("Response from mapSensor:", data); // Log the response for debugging
-    return data; // Assuming the API returns a JSON response
+    return data; // Return the full response, including the ID
   } catch (error) {
     console.error("Error mapping sensor:", error);
     throw error;
@@ -81,6 +84,7 @@ export const mapSensor = async (unique_identifier: string, label: string) => {
 };
 
 export const getmapedSensors = async () => {
+  if (!isAuthenticated()) throw new Error("User not authenticated");
   try {
     const response = await fetch(`${API_BASE_URL}/mappings`, {
       headers: { ...getAuthHeaders() },
@@ -98,12 +102,14 @@ export const getmapedSensors = async () => {
 };
 
 export const updateMapSensor = async (
+  id: number,
   unique_identifier: string,
   label: string
 ) => {
+  if (!isAuthenticated()) throw new Error("User not authenticated");
   try {
-    const response = await fetch(`${API_BASE_URL}/mappings`, {
-      method: "put",
+    const response = await fetch(`${API_BASE_URL}/mappings/${id}`, {
+      method: "PUT",
       headers: { "Content-Type": "application/json", ...getAuthHeaders() },
       body: JSON.stringify({
         unique_identifier,
@@ -114,34 +120,18 @@ export const updateMapSensor = async (
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
-    console.log("Response from mapSensor:", data); // Log the response for debugging
+    console.log("Response from updateMapSensor:", data); // Log the response for debugging
     return data; // Assuming the API returns a JSON response
   } catch (error) {
-    console.error("Error mapping sensor:", error);
+    console.error("Error updating sensor mapping:", error);
     throw error;
   }
 };
 
-// export const getlastestreadings = async () => {
-//   try {
-//     const response = await fetch(`${API_BASE_URL}/entries?limit=10`, {
-//       headers: getAuthHeaders(),
-//     });
-//     if (!response.ok) {
-//       throw new Error(`HTTP error! status: ${response.status}`);
-//     }
-//     var data = await response.json();
-//     console.log("Response from getlastestreadings:", data); // Log the response for debugging
-//     return data;
-//   } catch (error) {
-//     console.error("Error fetching object from API:", error);
-//     throw error;
-//   }
-// };
-
 export const getSensorReadingsByMacAddress = async (
   macAdresse: string | string[]
 ) => {
+  if (!isAuthenticated()) throw new Error("User not authenticated");
   try {
     // Ensure macAdresse is always an array
     const macArray = Array.isArray(macAdresse) ? macAdresse : [macAdresse];
@@ -161,24 +151,22 @@ export const getSensorReadingsByMacAddress = async (
   }
 };
 
-// export const renameSensor = async (newName: string, oldName: string) => {
-//   try {
-//     const response = await fetch(`${API_BASE_URL}/mappings`, {
-//       method: "PUT",
-//       headers: { "Content-Type": "application/json", ...getAuthHeaders() },
-//       body: JSON.stringify({ newName, oldName }),
-//     });
-//     if (!response.ok) {
-//       throw new Error(`HTTP error! status: ${response.status}`);
-//     }
-//     const data = await response.json();
-//     console.log("Response from renameSensor:", response); // Log the response for debugging
-//     return data; // Assuming the API returns a JSON response
-//   } catch (error) {
-//     console.error("Error renaming sensor:", error);
-//     throw error;
-//   }
-// };
+export const deleteMappedSensor = async (id: number) => {
+  if (!isAuthenticated()) throw new Error("User not authenticated");
+  try {
+    const response = await fetch(`${API_BASE_URL}/mappings/${id}`, {
+      method: "DELETE",
+      headers: { ...getAuthHeaders() },
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    console.log(`Sensor with ID ${id} removed successfully`);
+  } catch (error) {
+    console.error(`Error removing sensor with ID ${id}:`, error);
+    throw error;
+  }
+};
 
 export const getOutdoorHumidity = async (
   latitude: number,
