@@ -147,6 +147,7 @@ pub async fn get_daily_averages_for_user(
                 WHERE 
                     unique_identifier = $1
                     AND created_at >= CURRENT_DATE - INTERVAL '1 day' * $2
+                    AND CURRENT_DATE  >= created_at - INTERVAL '1 day'
                 GROUP BY DATE(created_at)
                 ORDER BY date DESC
             "#,
