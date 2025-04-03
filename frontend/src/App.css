@@ -52,7 +52,10 @@
 
 .sensor-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Responsive columns */
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(200px, 1fr)
+  ); /* Responsive columns */
   gap: 16px; /* Space between boxes */
   width: 100%; /* Full width */
   padding: 16px; /* Padding around the grid */
@@ -194,4 +197,71 @@ button {
 /* Button hover effects */
 .popup-content button:hover {
   opacity: 0.9;
+}
+
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+}
+
+.login-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.login-container input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.login-container button {
+  width: 100%;
+  padding: 10px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.login-container button:hover {
+  background-color: #0056b3;
+}
+
+.login-container .link-button {
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.login-container .link-button:hover {
+  color: #000408;
+}
+
+.login-container .error {
+  color: red;
+  text-align: center;
+}
+
+.login-container .success {
+  color: green;
+  text-align: center;
+}
+
+/* Center-align the switch-to-login and similar paragraphs */
+.login-container p {
+  text-align: center;
+  margin-top: 10px;
 }
