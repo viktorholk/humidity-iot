@@ -20,9 +20,13 @@ interface Sensor {
 interface SensorGridProps {
   sensors: Sensor[];
   selectedSensors: Record<string, boolean>;
-  setSelectedSensors: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+  setSelectedSensors: React.Dispatch<
+    React.SetStateAction<Record<string, boolean>>
+  >;
   setSensors: React.Dispatch<React.SetStateAction<Sensor[]>>;
-  setSensorReadings: React.Dispatch<React.SetStateAction<Record<string, Reading[]>>>;
+  setSensorReadings: React.Dispatch<
+    React.SetStateAction<Record<string, Reading[]>>
+  >;
   setIsRenamePopupVisible: React.Dispatch<React.SetStateAction<boolean>>;
   setRenamingSensorId: React.Dispatch<React.SetStateAction<string | null>>;
   setIsMapPopupVisible: React.Dispatch<React.SetStateAction<boolean>>;
@@ -45,7 +49,10 @@ const SensorGrid: React.FC<SensorGridProps> = ({
     return latestEntry.startsWith(today);
   };
 
-  const handleRemoveSensor = async (sensorId: number, uniqueIdentifier: string) => {
+  const handleRemoveSensor = async (
+    sensorId: number,
+    uniqueIdentifier: string
+  ) => {
     try {
       await deleteMappedSensor(sensorId);
       setSensors((prev) =>
@@ -96,7 +103,9 @@ const SensorGrid: React.FC<SensorGridProps> = ({
                 <FaEdit /> {/* Rename icon */}
               </button>
               <button
-                onClick={() => handleRemoveSensor(sensor.id, sensor.unique_identifier)}
+                onClick={() =>
+                  handleRemoveSensor(sensor.id, sensor.unique_identifier)
+                }
               >
                 <FaTrash /> {/* Remove icon */}
               </button>

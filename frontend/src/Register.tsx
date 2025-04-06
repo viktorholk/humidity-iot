@@ -55,7 +55,12 @@ const Register = ({ onSwitchToLogin }: RegisterProps) => {
       <button onClick={handleRegister}>Register</button>
       <p className="switch-to-login">
         Already have an account?{" "}
-        <button className="link-button" onClick={() => onSwitchToLogin(undefined)}> {/* Explicitly pass undefined */}
+        <button
+          className="link-button"
+          onClick={() => onSwitchToLogin(undefined)}
+        >
+          {" "}
+          {/* Explicitly pass undefined */}
           Login here
         </button>
       </p>

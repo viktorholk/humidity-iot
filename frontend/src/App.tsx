@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FaChevronDown, FaChevronUp, FaPlus } from "react-icons/fa"; // Import icons
+import { FaChevronDown, FaChevronUp } from "react-icons/fa"; // Import icons
 import Login from "./Login";
 import Register from "./Register";
 import SensorGrid from "./components/SensorGrid";
@@ -50,7 +50,9 @@ function App() {
   const [isMapLabelPopupVisible, setIsMapLabelPopupVisible] = useState(false);
   const [mappingSensorId, setMappingSensorId] = useState<string | null>(null);
   const [mappingSensorLabel, setMappingSensorLabel] = useState<string>("");
-  const [successMessage, setSuccessMessage] = useState<string | undefined>(undefined);
+  const [successMessage, setSuccessMessage] = useState<string | undefined>(
+    undefined
+  );
 
   useEffect(() => {
     const token = localStorage.getItem("jwtToken");

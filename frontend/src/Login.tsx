@@ -7,7 +7,11 @@ interface LoginProps {
   successMessage?: string; // Optional success message
 }
 
-const Login = ({ onLoginSuccess, onSwitchToRegister, successMessage }: LoginProps) => {
+const Login = ({
+  onLoginSuccess,
+  onSwitchToRegister,
+  successMessage,
+}: LoginProps) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -30,7 +34,8 @@ const Login = ({ onLoginSuccess, onSwitchToRegister, successMessage }: LoginProp
   return (
     <div className="login-container">
       <h2>Login</h2>
-      {successMessage && <p className="success">{successMessage}</p>} {/* Display success message */}
+      {successMessage && <p className="success">{successMessage}</p>}{" "}
+      {/* Display success message */}
       {error && <p className="error">{error}</p>}
       <input
         type="text"

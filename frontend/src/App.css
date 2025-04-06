@@ -13,7 +13,11 @@
   width: 100%;
   min-height: 100vh; /* Ensure the app covers the full height */
   box-sizing: border-box;
-  background: linear-gradient(to bottom, #f0f4f8, #d9e2ec); /* Subtle gradient */
+  background: linear-gradient(
+    to bottom,
+    #f0f4f8,
+    #d9e2ec
+  ); /* Subtle gradient */
   padding: 20px;
 }
 
