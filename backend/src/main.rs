@@ -3,6 +3,7 @@ use log::{error, info};
 mod core;
 mod models;
 mod routes;
+mod middleware;
 
 #[tokio::main]
 async fn main() {

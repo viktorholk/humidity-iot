@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT id, unique_identifier, value, created_at\n            FROM data_entry\n            ORDER BY created_at DESC\n            LIMIT $1\n        ",
+  "query": "\n        INSERT INTO app_user (username, password)\n        VALUES ($1, $2)\n        RETURNING id, username, password, created_at\n        ",
   "describe": {
     "columns": [
       {
@@ -10,13 +10,13 @@
       },
       {
         "ordinal": 1,
-        "name": "unique_identifier",
+        "name": "username",
         "type_info": "Varchar"
       },
       {
         "ordinal": 2,
-        "name": "value",
-        "type_info": "Float8"
+        "name": "password",
+        "type_info": "Text"
       },
       {
         "ordinal": 3,
@@ -26,15 +26,16 @@
     ],
     "parameters": {
       "Left": [
-        "Int8"
+        "Varchar",
+        "Text"
       ]
     },
     "nullable": [
       false,
       false,
       false,
-      false
+      true
     ]
   },
-  "hash": "21c2e71a9882c014601893750aded886145954dd0c30c10d68a0b61a46331b33"
+  "hash": "91feed9947c05489c850ad7a69ac5c06bda72a434c73bf4cc1f466223b3d6d73"
 }

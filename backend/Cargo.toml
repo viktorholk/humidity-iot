@@ -17,3 +17,5 @@ log = "0.4"
 fern = { version = "0.6", features = ["colored"] }
 chrono = { version = "0.4", features = ["serde"] }
 sqlx = { version = "0.8", features = [ "postgres", "chrono", "runtime-tokio" ] }
+jsonwebtoken = "9.3.1"
+bcrypt = "0.17.0"
