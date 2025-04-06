@@ -7,6 +7,30 @@ const getAuthHeaders = () => {
 
 const isAuthenticated = () => !!localStorage.getItem("jwtToken");
 
+const retryOnUnauthorized = async () => {
+  try {
+    localStorage.removeItem("jwtToken"); // Clear the token
+    window.location.href = "/"; // Redirect to the login page
+    throw new Error("User not authenticated. Redirecting to login.");
+  } catch (error) {
+    console.error("Error during retry on unauthorized:", error);
+    throw error;
+  }
+};
+
+const fetchWithRetry = async (url: string, options: RequestInit) => {
+  try {
+    const response = await fetch(url, options);
+    if (response.status === 401) {
+      await retryOnUnauthorized();
+    }
+    return response;
+  } catch (error) {
+    console.error("Error during fetchWithRetry:", error);
+    throw error;
+  }
+};
+
 export const registerUser = async (username: string, password: string) => {
   try {
     const response = await fetch(`${API_BASE_URL}/users`, {
@@ -19,7 +43,6 @@ export const registerUser = async (username: string, password: string) => {
     }
 
     const data = await response.json();
-    console.log("Response from registerUser:", data); // Log the response for debugging
     return data; // Assuming the API returns a JSON response
   } catch (error) {
     console.error("Error during registration:", error);
@@ -47,12 +70,11 @@ export const login = async (username: string, password: string) => {
 export const getSensors = async () => {
   if (!isAuthenticated()) throw new Error("User not authenticated");
   try {
-    const response = await fetch(`${API_BASE_URL}`); // Fetch all sensors
+    const response = await fetchWithRetry(`${API_BASE_URL}`, {});
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
-    console.log("Response from getSensors:", data); // Debugging log
     return data; // Return the full response
   } catch (error) {
     console.error("Error fetching sensors:", error);
@@ -63,7 +85,7 @@ export const getSensors = async () => {
 export const mapSensor = async (unique_identifier: string, label: string) => {
   if (!isAuthenticated()) throw new Error("User not authenticated");
   try {
-    const response = await fetch(`${API_BASE_URL}/mappings`, {
+    const response = await fetchWithRetry(`${API_BASE_URL}/mappings`, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...getAuthHeaders() },
       body: JSON.stringify({
@@ -75,7 +97,6 @@ export const mapSensor = async (unique_identifier: string, label: string) => {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
-    console.log("Response from mapSensor:", data); // Log the response for debugging
     return data; // Return the full response, including the ID
   } catch (error) {
     console.error("Error mapping sensor:", error);
@@ -86,14 +107,13 @@ export const mapSensor = async (unique_identifier: string, label: string) => {
 export const getmapedSensors = async () => {
   if (!isAuthenticated()) throw new Error("User not authenticated");
   try {
-    const response = await fetch(`${API_BASE_URL}/mappings`, {
+    const response = await fetchWithRetry(`${API_BASE_URL}/mappings`, {
       headers: { ...getAuthHeaders() },
     }); // Fetch mapped sensors
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
-    console.log("Response from getmapedSensors:", data); // Debugging log
     return data; // Return the full response
   } catch (error) {
     console.error("Error fetching mapped sensors:", error);
@@ -108,7 +128,7 @@ export const updateMapSensor = async (
 ) => {
   if (!isAuthenticated()) throw new Error("User not authenticated");
   try {
-    const response = await fetch(`${API_BASE_URL}/mappings/${id}`, {
+    const response = await fetchWithRetry(`${API_BASE_URL}/mappings/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json", ...getAuthHeaders() },
       body: JSON.stringify({
@@ -120,7 +140,6 @@ export const updateMapSensor = async (
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
-    console.log("Response from updateMapSensor:", data); // Log the response for debugging
     return data; // Assuming the API returns a JSON response
   } catch (error) {
     console.error("Error updating sensor mapping:", error);
@@ -129,13 +148,12 @@ export const updateMapSensor = async (
 };
 
 export const getSensorReadingsByMacAddress = async (
-  macAdresse: string | string[]
+  macAddress: string | string[]
 ) => {
   if (!isAuthenticated()) throw new Error("User not authenticated");
   try {
-    // Ensure macAdresse is always an array
-    const macArray = Array.isArray(macAdresse) ? macAdresse : [macAdresse];
-    const response = await fetch(
+    const macArray = Array.isArray(macAddress) ? macAddress : [macAddress];
+    const response = await fetchWithRetry(
       `${API_BASE_URL}/averages?unique_identifiers=${macArray.join(",")}`,
       { headers: { ...getAuthHeaders() } }
     );
@@ -143,10 +161,9 @@ export const getSensorReadingsByMacAddress = async (
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
-    console.log("Response from getSensorReadingsByMacAddress:", data); // Log the response for debugging
     return data;
   } catch (error) {
-    console.error("Error fetching object from API:", error);
+    console.error("Error fetching sensor readings:", error);
     throw error;
   }
 };
@@ -154,14 +171,13 @@ export const getSensorReadingsByMacAddress = async (
 export const deleteMappedSensor = async (id: number) => {
   if (!isAuthenticated()) throw new Error("User not authenticated");
   try {
-    const response = await fetch(`${API_BASE_URL}/mappings/${id}`, {
+    const response = await fetchWithRetry(`${API_BASE_URL}/mappings/${id}`, {
       method: "DELETE",
       headers: { ...getAuthHeaders() },
     });
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    console.log(`Sensor with ID ${id} removed successfully`);
   } catch (error) {
     console.error(`Error removing sensor with ID ${id}:`, error);
     throw error;

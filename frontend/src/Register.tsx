@@ -2,7 +2,7 @@ import { useState } from "react";
 import { registerUser } from "./Service"; // Assuming this function exists in your service
 
 interface RegisterProps {
-  onSwitchToLogin: () => void; // Callback to switch to the login form
+  onSwitchToLogin: (message?: string) => void; // Callback to switch to the login form
 }
 
 const Register = ({ onSwitchToLogin }: RegisterProps) => {
@@ -21,8 +21,7 @@ const Register = ({ onSwitchToLogin }: RegisterProps) => {
       const response = await registerUser(username, password); // Call the service
       if (response.id) {
         setError(null);
-        alert(`Registration successful! Welcome, ${response.username}.`);
-        onSwitchToLogin(); // Redirect to the login form
+        onSwitchToLogin("Registration successful! You can now log in."); // Pass success message
       } else {
         setError("Registration failed. Please try again.");
       }
@@ -56,7 +55,7 @@ const Register = ({ onSwitchToLogin }: RegisterProps) => {
       <button onClick={handleRegister}>Register</button>
       <p className="switch-to-login">
         Already have an account?{" "}
-        <button className="link-button" onClick={onSwitchToLogin}>
+        <button className="link-button" onClick={() => onSwitchToLogin(undefined)}> {/* Explicitly pass undefined */}
           Login here
         </button>
       </p>
