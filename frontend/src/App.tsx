@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { FaChevronDown, FaChevronUp, FaPlus } from "react-icons/fa"; // Import icons
 import Login from "./Login";
 import Register from "./Register";
 import SensorGrid from "./components/SensorGrid";
@@ -161,7 +162,7 @@ function App() {
     });
   };
 
-  const handleLoginSuccess = (token: string) => setIsAuthenticated(true);
+  const handleLoginSuccess = () => setIsAuthenticated(true);
 
   if (!isAuthenticated) {
     return (
@@ -188,25 +189,31 @@ function App() {
     <>
       <div className="App">
         <h1>Sensor Selection</h1>
-        <button onClick={() => setIsGridCollapsed((prev) => !prev)}>
-          {isGridCollapsed ? "Expand Grid" : "Collapse Grid"}
+        <button
+          className={`dropdown-button ${isGridCollapsed ? "collapsed" : ""}`}
+          onClick={() => setIsGridCollapsed((prev) => !prev)}
+        >
+          {isGridCollapsed ? <FaChevronDown /> : <FaChevronUp />}
         </button>
-        {!isGridCollapsed && (
-          <>
-            <button onClick={() => setIsMapPopupVisible(true)}>Add Sensor</button>
+        <div
+          className={`sensor-grid-container ${
+            isGridCollapsed ? "collapsed" : "expanded"
+          }`}
+        >
+          {!isGridCollapsed && (
             <SensorGrid
               sensors={sensors}
               selectedSensors={selectedSensors}
               setSelectedSensors={setSelectedSensors}
               setSensors={setSensors}
-              setSensorReadings={setSensorReadings} // Pass the function here
+              setSensorReadings={setSensorReadings}
               setIsRenamePopupVisible={setIsRenamePopupVisible}
               setRenamingSensorId={setRenamingSensorId}
               setIsMapPopupVisible={setIsMapPopupVisible}
               handleCheckboxChange={handleCheckboxChange}
             />
-          </>
-        )}
+          )}
+        </div>
         <GraphContainer
           selectedSensors={selectedSensors}
           sensorReadings={sensorReadings}

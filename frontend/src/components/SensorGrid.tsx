@@ -1,4 +1,5 @@
 import React from "react";
+import { FaEdit, FaTrash, FaPlus } from "react-icons/fa"; // Import icons
 import { deleteMappedSensor } from "../Service";
 
 // Define or import the Reading interface
@@ -67,6 +68,12 @@ const SensorGrid: React.FC<SensorGridProps> = ({
 
   return (
     <div className="sensor-grid">
+      <div
+        className="sensor-box add-sensor"
+        onClick={() => setIsMapPopupVisible(true)}
+      >
+        <FaPlus /> {/* Add icon */}
+      </div>
       {sensors.map((sensor) => (
         <div
           key={sensor.unique_identifier}
@@ -86,12 +93,12 @@ const SensorGrid: React.FC<SensorGridProps> = ({
                   setIsRenamePopupVisible(true);
                 }}
               >
-                Rename
+                <FaEdit /> {/* Rename icon */}
               </button>
               <button
                 onClick={() => handleRemoveSensor(sensor.id, sensor.unique_identifier)}
               >
-                Remove
+                <FaTrash /> {/* Remove icon */}
               </button>
             </h4>
           </div>

@@ -1,4 +1,3 @@
-import React from "react";
 import { mapSensor } from "../Service";
 
 const MapLabelPopup = ({
@@ -7,7 +6,6 @@ const MapLabelPopup = ({
   mappingSensorId,
   setMappingSensorId,
   setIsMapLabelPopupVisible,
-  sensors,
   setSensors,
   availableSensors,
   setAvailableSensors,

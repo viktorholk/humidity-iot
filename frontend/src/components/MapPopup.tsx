@@ -1,8 +1,5 @@
-import React from "react";
-
 const MapPopup = ({
   availableSensors,
-  setAvailableSensors,
   setMappingSensorId,
   setIsMapLabelPopupVisible,
   setIsMapPopupVisible,
@@ -17,6 +14,7 @@ const MapPopup = ({
               <li key={sensor.unique_identifier}>
                 {sensor.unique_identifier}
                 <button
+                  className="map-button"
                   onClick={() => {
                     setMappingSensorId(sensor.unique_identifier);
                     setIsMapLabelPopupVisible(true);
@@ -30,7 +28,12 @@ const MapPopup = ({
         ) : (
           <p>No available sensors to map.</p>
         )}
-        <button onClick={() => setIsMapPopupVisible(false)}>Close</button>
+        <button
+          className="close-button"
+          onClick={() => setIsMapPopupVisible(false)}
+        >
+          Close
+        </button>
       </div>
     </div>
   );
