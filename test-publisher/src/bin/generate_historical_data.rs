@@ -15,7 +15,7 @@ struct ExampleMessage {
 fn main() -> Result<()> {
     // Open connection to RabbitMQ server
     // Use the appropriate connection string
-     let mut connection = Connection::insecure_open("amqp://admin:Hu0og0kRanxLCoM@iot.holk.solutions:5672")?;
+     let mut connection = Connection::insecure_open("amqp://admin:secret@iot.holk.solutions:5672")?;
     //let mut connection = Connection::insecure_open("amqp://guest:guest@localhost:5672")?;
 
     // Create a channel
