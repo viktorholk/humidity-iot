@@ -148,13 +148,16 @@ export const updateMapSensor = async (
 };
 
 export const getSensorReadingsByMacAddress = async (
-  macAddress: string | string[]
+  macAddress: string | string[],
+  days: number = 7
 ) => {
   if (!isAuthenticated()) throw new Error("User not authenticated");
   try {
     const macArray = Array.isArray(macAddress) ? macAddress : [macAddress];
     const response = await fetchWithRetry(
-      `${API_BASE_URL}/averages?unique_identifiers=${macArray.join(",")}`,
+      `${API_BASE_URL}/averages?unique_identifiers=${macArray.join(
+        ","
+      )}&days=${days}`,
       { headers: { ...getAuthHeaders() } }
     );
     if (!response.ok) {
@@ -186,20 +189,33 @@ export const deleteMappedSensor = async (id: number) => {
 
 export const getOutdoorHumidity = async (
   latitude: number,
-  longitude: number
+  longitude: number,
+  amountOfDays: number = 7
 ) => {
   try {
+    const endDate = new Date().toISOString().split("T")[0]; // Today's date
+    const startDate = new Date(
+      new Date().setDate(new Date().getDate() - amountOfDays)
+    )
+      .toISOString()
+      .split("T")[0]; // Date `amountOfDays` ago
+
     const response = await fetch(
-      `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=relative_humidity_2m_mean&timezone=auto`
+      `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&start_date=${startDate}&end_date=${endDate}&daily=relative_humidity_2m_mean&timezone=auto`
     );
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
-    // Extract the daily humidity data
-    return {
-      meanHumidity: data.daily.relative_humidity_2m_mean,
-    };
+    // Map daily humidity values to their respective dates
+    const dailyHumidity = data.daily.time.map(
+      (date: string, index: number) => ({
+        date,
+        value: data.daily.relative_humidity_2m_mean[index],
+      })
+    );
+
+    return dailyHumidity;
   } catch (error) {
     console.error("Error fetching outdoor humidity:", error);
     throw error;

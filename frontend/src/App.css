@@ -172,6 +172,39 @@ button:hover {
   height: 100%; /* Full height */
 }
 
+.graph-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.dropdown-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dropdown-container label {
+  font-size: 1em;
+  color: #213547;
+}
+
+.dropdown-container select {
+  padding: 5px 10px;
+  font-size: 1em;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+  color: #213547;
+  cursor: pointer;
+}
+
+.dropdown-container select:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
 .modal {
   position: fixed;
   top: 0;

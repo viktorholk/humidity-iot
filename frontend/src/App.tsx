@@ -44,7 +44,9 @@ function App() {
   const [isRenamePopupVisible, setIsRenamePopupVisible] = useState(false);
   const [renamingSensorId, setRenamingSensorId] = useState<string | null>(null);
   const [newName, setNewName] = useState<string>("");
-  const [outdoorHumidity, setOutdoorHumidity] = useState<number | null>(null);
+  const [outdoorHumidity, setOutdoorHumidity] = useState<
+    { date: string; value: number }[]
+  >([]);
   const [isMapPopupVisible, setIsMapPopupVisible] = useState(false);
   const [availableSensors, setAvailableSensors] = useState<Sensor[]>([]);
   const [isMapLabelPopupVisible, setIsMapLabelPopupVisible] = useState(false);
@@ -53,6 +55,7 @@ function App() {
   const [successMessage, setSuccessMessage] = useState<string | undefined>(
     undefined
   );
+  const [daysToLookBack, setDaysToLookBack] = useState(7); // Add state for days to look back
 
   useEffect(() => {
     const token = localStorage.getItem("jwtToken");
@@ -106,14 +109,14 @@ function App() {
     if (!isAuthenticated) return;
     const fetchOutdoorHumidity = async () => {
       try {
-        const response = await getOutdoorHumidity(52.52, 13.41);
-        setOutdoorHumidity(response.meanHumidity);
+        const response = await getOutdoorHumidity(52.52, 13.41, daysToLookBack);
+        setOutdoorHumidity(response); // Store the daily humidity data
       } catch (error) {
         console.error("Error fetching outdoor humidity:", error);
       }
     };
     fetchOutdoorHumidity();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, daysToLookBack]); // Add daysToLookBack as a dependency
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -142,7 +145,7 @@ function App() {
       const isSelected = !prev[id];
 
       if (isSelected) {
-        getSensorReadingsByMacAddress(id)
+        getSensorReadingsByMacAddress(id, daysToLookBack)
           .then((response) => {
             setSensorReadings((prevReadings) => ({
               ...prevReadings,
@@ -161,6 +164,26 @@ function App() {
       }
 
       return { ...prev, [id]: isSelected };
+    });
+  };
+
+  const handleDaysToLookBackChange = (days: number) => {
+    setDaysToLookBack(days);
+
+    // Fetch updated readings for all selected sensors
+    Object.keys(selectedSensors).forEach((id) => {
+      if (selectedSensors[id]) {
+        getSensorReadingsByMacAddress(id, days)
+          .then((response) => {
+            setSensorReadings((prevReadings) => ({
+              ...prevReadings,
+              [id]: response[id] || [],
+            }));
+          })
+          .catch((error) => {
+            console.error(`Error fetching readings for sensor ${id}:`, error);
+          });
+      }
     });
   };
 
@@ -221,6 +244,8 @@ function App() {
           sensorReadings={sensorReadings}
           sensors={sensors}
           outdoorHumidity={outdoorHumidity}
+          daysToLookBack={daysToLookBack}
+          onDaysToLookBackChange={handleDaysToLookBackChange}
         />
       </div>
 
