@@ -7,11 +7,14 @@ import GraphContainer from "./components/GraphContainer";
 import RenamePopup from "./components/RenamePopup";
 import MapPopup from "./components/MapPopup";
 import MapLabelPopup from "./components/MapLabelPopup";
+import Predictions from "./components/Predictions"; // Import Predictions component
 import {
   getSensors,
   getmapedSensors,
   getOutdoorHumidity,
   getSensorReadingsByMacAddress,
+  getPredictions, // Import getPredictions
+  getTomorrowOutdoorHumidity, // Import new service
 } from "./Service";
 import "./App.css";
 
@@ -56,6 +59,8 @@ function App() {
     undefined
   );
   const [daysToLookBack, setDaysToLookBack] = useState(7); // Add state for days to look back
+  const [predictions, setPredictions] = useState<Record<string, number>>({}); // Add state for predictions
+  const [tomorrowOutdoorHumidity, setTomorrowOutdoorHumidity] = useState<number | null>(null); // Add state for tomorrow's outdoor humidity
 
   useEffect(() => {
     const token = localStorage.getItem("jwtToken");
@@ -137,6 +142,36 @@ function App() {
     };
     fetchAvailableSensors();
   }, [isAuthenticated, isMapPopupVisible]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const fetchPredictions = async () => {
+      try {
+        const data = await getPredictions(); // Use service function
+        setPredictions(data); // Store predictions
+      } catch (error) {
+        console.error("Error fetching predictions:", error);
+      }
+    };
+
+    fetchPredictions();
+  }, [isAuthenticated]); // Fetch predictions when authenticated
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const fetchTomorrowOutdoorHumidity = async () => {
+      try {
+        const humidity = await getTomorrowOutdoorHumidity(52.52, 13.41); // Example coordinates
+        setTomorrowOutdoorHumidity(humidity);
+      } catch (error) {
+        console.error("Error fetching tomorrow's outdoor humidity:", error);
+      }
+    };
+
+    fetchTomorrowOutdoorHumidity();
+  }, [isAuthenticated]); // Fetch tomorrow's outdoor humidity when authenticated
 
   const handleCheckboxChange = async (id: string) => {
     if (!isAuthenticated) return;
@@ -246,6 +281,12 @@ function App() {
           outdoorHumidity={outdoorHumidity}
           daysToLookBack={daysToLookBack}
           onDaysToLookBackChange={handleDaysToLookBackChange}
+        />
+        <Predictions
+          selectedSensors={selectedSensors}
+          predictions={predictions}
+          sensors={sensors}
+          tomorrowOutdoorHumidity={tomorrowOutdoorHumidity}
         />
       </div>
 

@@ -221,3 +221,40 @@ export const getOutdoorHumidity = async (
     throw error;
   }
 };
+
+export const getTomorrowOutdoorHumidity = async (
+  latitude: number,
+  longitude: number
+) => {
+  try {
+    const tomorrowDate = new Date(new Date().setDate(new Date().getDate() + 1))
+      .toISOString()
+      .split("T")[0]; // Tomorrow's date
+
+    const response = await fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&start_date=${tomorrowDate}&end_date=${tomorrowDate}&daily=relative_humidity_2m_mean&timezone=auto`
+    );
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    return data.daily.relative_humidity_2m_mean[0]; // Return tomorrow's humidity
+  } catch (error) {
+    console.error("Error fetching tomorrow's outdoor humidity:", error);
+    throw error;
+  }
+};
+
+export const getPredictions = async () => {
+  try {
+    const response = await fetch("http://127.0.0.1:5000/predict_all");
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    return data; // Return the predictions
+  } catch (error) {
+    console.error("Error fetching predictions:", error);
+    throw error;
+  }
+};
