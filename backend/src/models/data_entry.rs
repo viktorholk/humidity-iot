@@ -78,6 +78,7 @@ pub async fn get_recent_entries_for_user(
             FROM data_entry de
             JOIN data_entry_mapping dem ON de.unique_identifier = dem.unique_identifier
             WHERE dem.user_id = $1
+            AND CURRENT_DATE  >= de.created_at - INTERVAL '1 day'
             ORDER BY de.created_at DESC
             LIMIT $2
         "#,

@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://iot.holk.solutions:3000"; // Replace with your API base URL
+const API_BASE_URL = process.env.NODE_ENV === 'production' ? "http://backend:3000" : "http://iot.holk.solutions:3000"
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem("jwtToken"); // Retrieve token from localStorage
