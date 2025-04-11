@@ -247,7 +247,7 @@ export const getTomorrowOutdoorHumidity = async (
 
 export const getPredictions = async () => {
   try {
-    const response = await fetch("http://127.0.0.1:5000/predict_all");
+    const response = await fetch("http://iot.holk.solutions:5000/predict_all");
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }

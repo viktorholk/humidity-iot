@@ -69,6 +69,15 @@ services:
         - ./rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins
         - rabbitmq_data:/var/lib/rabbitmq
         - rabbitmq_data:/var/log/rabbitmq
+  prediction_model: 
+    build:
+      context: prediction-model
+      target: builder
+    # flask requires SIGINT to stop gracefully
+    # (default stop signal from Compose is SIGTERM)
+    stop_signal: SIGINT
+    ports:
+      - '5000:5000'
 volumes:
   postgres_data:
     driver: local
