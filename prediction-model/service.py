@@ -5,7 +5,6 @@ import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS  # Import CORS
 
-os.makedirs(os.path.dirname(log_path), exist_ok=True)  # Ensure the directory exists
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
