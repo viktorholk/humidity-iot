@@ -73,20 +73,20 @@ def fetch_sensor_data(unique_identifier, days=30):
     sensor_data.rename(columns={'average_value': 'indoor_humidity'}, inplace=True)
     return sensor_data
 
-# Initialize Flask app
-app = Flask(__name__)
-CORS(app)  # Enable CORS for the Flask app
+# # Initialize Flask app
+# app = Flask(__name__)
+# CORS(app)  # Enable CORS for the Flask app
 
 # Define a default route for the root URL
-@app.route('/', methods=['GET'])
-def home():
-    return jsonify({"message": "Welcome to the Humidity Prediction API. Use /predict_all to get predictions."})
+# @app.route('/', methods=['GET'])
+# def home():
+#     return jsonify({"message": "Welcome to the Humidity Prediction API. Use /predict_all to get predictions."})
 
-# Define a route for predicting indoor humidity for all sensors
-@app.route('/predict_all', methods=['GET'])
-def predict_all():
-    try:
-        from predictionModel import predictions_cache  # Import the predictions cache from predictionModel
-        return jsonify(predictions_cache)
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+# # Define a route for predicting indoor humidity for all sensors
+# @app.route('/predict_all', methods=['GET'])
+# def predict_all():
+#     try:
+#         from predictionModel import predictions_cache  # Import the predictions cache from predictionModel
+#         return jsonify(predictions_cache)
+#     except Exception as e:
+#         return jsonify({'error': str(e)}), 500
