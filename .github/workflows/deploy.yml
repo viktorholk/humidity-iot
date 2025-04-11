@@ -21,6 +21,7 @@ jobs:
           script: |
             cd /home/dev
             git clone https://github.com/viktorholk/humidity-iot.git
+            git config --global --add safe.directory /home/dev/humidity-iot
             cd humidity-iot/
             git pull
             docker compose down

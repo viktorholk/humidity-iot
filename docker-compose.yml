@@ -69,10 +69,11 @@ services:
         - ./rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins
         - rabbitmq_data:/var/lib/rabbitmq
         - rabbitmq_data:/var/log/rabbitmq
-  prediction_model: 
+  prediction_model:
     build:
-      context: prediction-model
-      target: builder
+      context: ./prediction-model
+      dockerfile: Dockerfile
+    restart: always
     # flask requires SIGINT to stop gracefully
     # (default stop signal from Compose is SIGTERM)
     stop_signal: SIGINT
