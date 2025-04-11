@@ -5,14 +5,10 @@ import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS  # Import CORS
 
-# Configure logging to log to a file at "C:\unicontanLog"
-log_path = r"C:\unicontanLog\humidity_iot_logs.log"
 os.makedirs(os.path.dirname(log_path), exist_ok=True)  # Ensure the directory exists
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
-    filename=log_path,  # Log file path
-    filemode='a'  # Append to the file instead of overwriting
 )
 
 API_BASE_URL = "http://iot.holk.solutions:3000"

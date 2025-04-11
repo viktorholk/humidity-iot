@@ -73,6 +73,7 @@ services:
     build:
       context: ./prediction-model
       dockerfile: Dockerfile
+    restart: always
     # flask requires SIGINT to stop gracefully
     # (default stop signal from Compose is SIGTERM)
     stop_signal: SIGINT
