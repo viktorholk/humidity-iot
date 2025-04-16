@@ -21,7 +21,7 @@ This project is an Internet of Things (IoT) system designed to monitor environme
 
 2.  **Clone the repository:**
     ```bash
-    git clone <your-repository-url>
+    git clone git@github.com:viktorholk/humidity-iot.git
     cd humidity-iot
     ```
 
@@ -32,7 +32,6 @@ This project is an Internet of Things (IoT) system designed to monitor environme
         RABBITMQ_PASSWORD=<choose_a_strong_password>
         JWT_SECRET=<choose_a_strong_secret_key>
         ```
-    *   Ensure the backend's `.env` file (`backend/.env`) is correctly configured if it contains different or additional variables needed at runtime (though `docker-compose.yml` seems to inject the primary ones).
 
 4.  **Build and Run:**
     ```bash
@@ -42,7 +41,7 @@ This project is an Internet of Things (IoT) system designed to monitor environme
     *   The `--build` flag ensures the images are built before starting.
 
 5.  **Access Services:**
-    *   **Frontend:** `http://localhost:80` (or the mapped port)
+    *   **Frontend:** `http://localhost:80`
     *   **Backend API:** `http://localhost:3000`
     *   **Prediction API:** `http://localhost:5000`
     *   **RabbitMQ Management:** `http://localhost:15672` (Username: `admin`, Password: `${RABBITMQ_PASSWORD}`)
